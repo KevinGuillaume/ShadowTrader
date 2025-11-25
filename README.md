@@ -1,2 +1,2 @@
-# Shadow Trader
-A polymarket tracker that lets users see top trader activity in order to look at what predictions are trending.
+# Shadow Sports Trader
+A polymarket tracker that lets users see overall sentiment in sports. Going to try incorporating sports analytics
