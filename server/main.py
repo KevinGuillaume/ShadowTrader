@@ -16,14 +16,22 @@ def get_events_by_league(league: str):
     response = requests.get(url)
 
     data = response.json()
-    print("length: ",len(data))
     events = []
     for event in data:
-        # Filter for NFL related events... NFL is hardcoded for now i'll add a map for different ones like nba soccer etc
         if league in event["title"]:
             events.append(event)
 
     return events
+
+
+def get_markets_for_event(event):
+    """Gets all markets for a given event object"""    
+    markets = []
+    for market in event["markets"]:
+        markets.append(market)
+
+    return markets
+
 
 @app.get("/league/{league}")
 def get_leage_info(league: str):
@@ -33,13 +41,10 @@ def get_leage_info(league: str):
     querystring = {
         "league":league
     }
-    all_event = get_events_by_league(league)
+    all_events = get_events_by_league(league)
     response = requests.get(url, params=querystring)
 
     pre_parsed_data = response.json()
-
-
-
 
 
     return 
