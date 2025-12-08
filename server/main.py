@@ -12,7 +12,7 @@ def health():
 # Gets all events related to a league
 def get_events_by_league(league: str):
     """Returns all active polymarket events"""
-    url = "/events?closed=false&limit=500"
+    url = "https://gamma-api.polymarket.com/events?closed=false&limit=500"
     response = requests.get(url)
 
     data = response.json()
@@ -144,18 +144,21 @@ def format_money(amount: float) -> str:
 @app.get("/league/{league}")
 def get_leage_info(league: str):
     """Returns all teams associated with a given league"""
-    url = "/teams"
+    url = "https://gamma-api.polymarket.com/teams"
 
     querystring = {
         "league":league
     }
     all_events = get_events_by_league(league)
+    
+    events_and_markets_map = {}
+
     # Use all events 
-    # for event in all_events:
-    #    # get the markets then clean them
-    #    all_markets_for_this_event = get_markets_for_event(event)
-    #    # going to return this one
-    #    cleaned_markets_to_return = parse_polymarket_markets(all_markets_for_this_event)
+     for event in all_events:
+        # get the markets then clean them
+        all_markets_for_this_event = get_markets_for_event(event)
+        # going to return this one
+        cleaned_markets_to_return = parse_polymarket_markets(all_markets_for_this_event)
     response = requests.get(url, params=querystring)
 
     pre_parsed_data = response.json()
