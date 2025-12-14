@@ -1,8 +1,21 @@
 from typing import Union
 import requests
 from fastapi import FastAPI
+from typing import Union
+import requests
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Your frontend URLs
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 @app.get("/ping")
@@ -33,7 +46,7 @@ def get_markets_for_event(event):
     return markets
 
 
-def parse_polymarket_markets(raw_markets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def parse_polymarket_markets(raw_markets):
     """
     Takes the massive raw Polymarket market objects and returns clean,
     front-end-friendly versions with only the important fields i like lol.
@@ -152,16 +165,21 @@ def get_leage_info(league: str):
     all_events = get_events_by_league(league)
     
     events_and_markets_map = {}
-
+    temp = None
     # Use all events 
-     for event in all_events:
+    for event in all_events:
         # get the markets then clean them
         all_markets_for_this_event = get_markets_for_event(event)
         # going to return this one
         cleaned_markets_to_return = parse_polymarket_markets(all_markets_for_this_event)
+        temp = cleaned_markets_to_return
+
+
+
     response = requests.get(url, params=querystring)
 
     pre_parsed_data = response.json()
 
+    print(temp)
 
-    return 
+    return temp
