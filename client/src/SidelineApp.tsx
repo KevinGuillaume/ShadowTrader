@@ -8,13 +8,13 @@ export default function SidelineApp() {
   const [leagueTab, setLeagueTab] = useState<string>("NFL");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const leagues = ["NFL", "NBA", "MLB"]; // Can add more later
+  const leagues = ["nfl", "nba", "mlb","nhl"]; // Can add more later
 
   async function init() {
     setLoading(true);
     try {
       const values = await backendAPI.getEventsData(leagueTab);
-      setData(values["events"] || []);
+      setData(values|| []);
     } catch (error) {
       console.error(`Failed to load ${leagueTab} data:`, error);
       setData([]);
@@ -35,14 +35,14 @@ export default function SidelineApp() {
           Sideline Trader
         </h1>
         <p className="text-xl text-gray-400">
-          Live Polymarket Odds • {leagueTab} Markets
+          Live Polymarket Odds • {leagueTab.toLocaleUpperCase()} Markets
         </p>
       </header>
 
       {/* Tab Selector */}
       <div className="max-w-7xl mx-auto px-4 mb-12">
         <div className="flex justify-center">
-          <nav className="inline-flex rounded-xl bg-gray-800 p-1.5 shadow-xl border border-gray-700">
+          <nav className="inline-flex rounded-xl bg-gray-800 p-1.5 shadow-xl border border-gray-700 gap-2">
             {leagues.map((league) => (
               <button
                 key={league}
@@ -55,7 +55,7 @@ export default function SidelineApp() {
                   }
                 `}
               >
-                {league}
+                {league.toLocaleUpperCase()}
               </button>
             ))}
           </nav>

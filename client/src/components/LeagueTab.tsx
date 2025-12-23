@@ -64,34 +64,27 @@ export default function LeagueTab({ data, league }: LeagueTabProps) {
 
   return (
     <div>
-      {data.map((event: any) => (
-        <section key={event.title} className="mb-16">
+      {data.map((event: any,index) => (
+        <section key={index} className="mb-16">
           <h2 className="text-3xl font-bold mb-8 text-blue-400">
-            {event.title}
+            {event.question}
           </h2>
 
-          {event.markets && event.markets.length > 0 ? (
+          {event ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {event.markets
-                .sort((a: any, b: any) => {
-                  const aProb = parseFloat(a.outcomePrices?.[0] || "0");
-                  const bProb = parseFloat(b.outcomePrices?.[0] || "0");
-                  return bProb - aProb; // Highest probability first
-                })
-                .map((market: any) => (
                   <DisplayCard
-                    key={market.id}
-                    market={market}
+                    key={event.id}
+                    market={event}
                     extractTitle={
-                      event.title.toLowerCase().includes("leader") ||
-                      event.title.toLowerCase().includes("mvp") ||
-                      event.title.toLowerCase().includes("rookie") ||
-                      event.title.toLowerCase().includes("cy young")
+                      event.question.toLowerCase().includes("leader") ||
+                      event.question.toLowerCase().includes("mvp") ||
+                      event.question.toLowerCase().includes("rookie") ||
+                      event.question.toLowerCase().includes("cy young")
                         ? extractTitle
                         : undefined
                     }
                   />
-                ))}
+                
             </div>
           ) : (
             <p className="text-gray-500">No markets available for this event.</p>
