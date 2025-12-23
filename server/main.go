@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -12,85 +12,218 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Market struct {
+	ID                           string   `json:"id"`
+	Question                     string   `json:"question,omitempty"` // Present on binary markets
+	Title                        string   `json:"title,omitempty"`    // Present on multi-outcome/group markets
+	ConditionID                  string   `json:"conditionId,omitempty"`
+	Slug                         string   `json:"slug"`
+	ResolutionSource             string   `json:"resolutionSource,omitempty"`
+	EndDate                      string   `json:"endDate,omitempty"` // RFC3339-like
+	EndDateIso                   string   `json:"endDateIso,omitempty"`
+	Liquidity                    string   `json:"liquidity,omitempty"` // String representation of float
+	LiquidityNum                 float64  `json:"liquidityNum,omitempty"`
+	LiquidityClob                float64  `json:"liquidityClob,omitempty"`
+	StartDate                    string   `json:"startDate,omitempty"`
+	StartDateIso                 string   `json:"startDateIso,omitempty"`
+	Image                        string   `json:"image,omitempty"`
+	Icon                         string   `json:"icon,omitempty"`
+	Description                  string   `json:"description,omitempty"`
+	Outcomes                     string   `json:"outcomes,omitempty"`      // Changed to string
+	OutcomePrices                string   `json:"outcomePrices,omitempty"` // Changed to string
+	ClobTokenIds                 string   `json:"clobTokenIds,omitempty"`
+	Volume                       string   `json:"volume,omitempty"`
+	VolumeNum                    float64  `json:"volumeNum,omitempty"`
+	VolumeClob                   float64  `json:"volumeClob,omitempty"`
+	Volume24hr                   float64  `json:"volume24hr,omitempty"`
+	Volume1wk                    float64  `json:"volume1wk,omitempty"`
+	Volume1mo                    float64  `json:"volume1mo,omitempty"`
+	Volume1yr                    float64  `json:"volume1yr,omitempty"`
+	Volume24hrClob               float64  `json:"volume24hrClob,omitempty"`
+	Volume1wkClob                float64  `json:"volume1wkClob,omitempty"`
+	Volume1moClob                float64  `json:"volume1moClob,omitempty"`
+	Volume1yrClob                float64  `json:"volume1yrClob,omitempty"`
+	Active                       bool     `json:"active"`
+	Closed                       bool     `json:"closed"`
+	MarketMakerAddress           string   `json:"marketMakerAddress,omitempty"`
+	CreatedAt                    string   `json:"createdAt,omitempty"` // Timestamp
+	UpdatedAt                    string   `json:"updatedAt,omitempty"`
+	New                          bool     `json:"new"`
+	Featured                     bool     `json:"featured"`
+	SubmittedBy                  string   `json:"submitted_by,omitempty"`
+	Archived                     bool     `json:"archived"`
+	ResolvedBy                   string   `json:"resolvedBy,omitempty"`
+	Restricted                   bool     `json:"restricted"`
+	GroupItemTitle               string   `json:"groupItemTitle,omitempty"`
+	GroupItemThreshold           string   `json:"groupItemThreshold,omitempty"`
+	QuestionID                   string   `json:"questionID,omitempty"`
+	EnableOrderBook              bool     `json:"enableOrderBook"`
+	OrderPriceMinTickSize        float64  `json:"orderPriceMinTickSize,omitempty"`
+	OrderMinSize                 int      `json:"orderMinSize,omitempty"`
+	HasReviewedDates             bool     `json:"hasReviewedDates,omitempty"`
+	UMABond                      string   `json:"umaBond,omitempty"`
+	UMAReward                    string   `json:"umaReward,omitempty"`
+	AcceptingOrders              bool     `json:"acceptingOrders,omitempty"`
+	NegRisk                      bool     `json:"negRisk"`
+	Events                       []Event  `json:"events,omitempty"` // Nested event objects
+	Ready                        bool     `json:"ready,omitempty"`
+	Funded                       bool     `json:"funded,omitempty"`
+	AcceptingOrdersTimestamp     string   `json:"acceptingOrdersTimestamp,omitempty"`
+	CYOM                         bool     `json:"cyom"`
+	Competitive                  float64  `json:"competitive,omitempty"`
+	PagerDutyNotificationEnabled bool     `json:"pagerDutyNotificationEnabled,omitempty"`
+	Approved                     bool     `json:"approved,omitempty"`
+	RewardsMinSize               float64  `json:"rewardsMinSize,omitempty"`
+	RewardsMaxSpread             float64  `json:"rewardsMaxSpread,omitempty"`
+	Spread                       float64  `json:"spread,omitempty"`
+	OneDayPriceChange            float64  `json:"oneDayPriceChange,omitempty"`
+	OneHourPriceChange           float64  `json:"oneHourPriceChange,omitempty"`
+	OneWeekPriceChange           float64  `json:"oneWeekPriceChange,omitempty"`
+	OneMonthPriceChange          float64  `json:"oneMonthPriceChange,omitempty"`
+	LastTradePrice               float64  `json:"lastTradePrice,omitempty"`
+	BestBid                      float64  `json:"bestBid,omitempty"`
+	BestAsk                      float64  `json:"bestAsk,omitempty"`
+	AutomaticallyActive          bool     `json:"automaticallyActive,omitempty"`
+	ClearBookOnStart             bool     `json:"clearBookOnStart,omitempty"`
+	ManualActivation             bool     `json:"manualActivation,omitempty"`
+	NegRiskOther                 bool     `json:"negRiskOther,omitempty"`
+	UMAResolutionStatuses        string   `json:"umaResolutionStatuses,omitempty"`
+	PendingDeployment            bool     `json:"pendingDeployment"`
+	Deploying                    bool     `json:"deploying"`
+	RFQEnabled                   bool     `json:"rfqEnabled,omitempty"`
+	HoldingRewardsEnabled        bool     `json:"holdingRewardsEnabled,omitempty"`
+	FeesEnabled                  bool     `json:"feesEnabled,omitempty"`
+	RequiresTranslation          bool     `json:"requiresTranslation,omitempty"`
+	CommentCount                 int      `json:"commentCount,omitempty"`
+	ShowAllOutcomes              bool     `json:"showAllOutcomes,omitempty"`
+	ShowMarketImages             bool     `json:"showMarketImages,omitempty"`
+	EnableNegRisk                bool     `json:"enableNegRisk,omitempty"`
+	NegRiskAugmented             bool     `json:"negRiskAugmented,omitempty"`
+	NegRiskMarketID              string   `json:"negRiskMarketID,omitempty"`
+	Series                       []Series `json:"series,omitempty"` // Sometimes present on multi-outcome markets
+	// Add more fields if you encounter them in specific markets
+}
+
 type Event struct {
-	Title   string   `json:"title"`
-	Markets []Market `json:"markets"`
+	ID                  string  `json:"id"`
+	Ticker              string  `json:"ticker,omitempty"`
+	Slug                string  `json:"slug"`
+	Title               string  `json:"title"`
+	Description         string  `json:"description,omitempty"`
+	ResolutionSource    string  `json:"resolutionSource,omitempty"`
+	StartDate           string  `json:"startDate,omitempty"`
+	CreationDate        string  `json:"creationDate,omitempty"`
+	EndDate             string  `json:"endDate,omitempty"`
+	Image               string  `json:"image,omitempty"`
+	Icon                string  `json:"icon,omitempty"`
+	Active              bool    `json:"active"`
+	Closed              bool    `json:"closed"`
+	Archived            bool    `json:"archived"`
+	New                 bool    `json:"new"`
+	Featured            bool    `json:"featured"`
+	Restricted          bool    `json:"restricted"`
+	Liquidity           float64 `json:"liquidity,omitempty"`
+	Volume              float64 `json:"volume,omitempty"`
+	OpenInterest        float64 `json:"openInterest,omitempty"`
+	CreatedAt           string  `json:"createdAt,omitempty"`
+	UpdatedAt           string  `json:"updatedAt,omitempty"`
+	Competitive         float64 `json:"competitive,omitempty"`
+	Volume24hr          float64 `json:"volume24hr,omitempty"`
+	Volume1wk           float64 `json:"volume1wk,omitempty"`
+	Volume1mo           float64 `json:"volume1mo,omitempty"`
+	Volume1yr           float64 `json:"volume1yr,omitempty"`
+	EnableOrderBook     bool    `json:"enableOrderBook"`
+	LiquidityClob       float64 `json:"liquidityClob,omitempty"`
+	CommentCount        int     `json:"commentCount,omitempty"`
+	CYOM                bool    `json:"cyom"`
+	ShowAllOutcomes     bool    `json:"showAllOutcomes"`
+	ShowMarketImages    bool    `json:"showMarketImages"`
+	EnableNegRisk       bool    `json:"enableNegRisk"`
+	AutomaticallyActive bool    `json:"automaticallyActive"`
+	NegRiskAugmented    bool    `json:"negRiskAugmented,omitempty"`
+	PendingDeployment   bool    `json:"pendingDeployment"`
+	Deploying           bool    `json:"deploying"`
+	RequiresTranslation bool    `json:"requiresTranslation"`
+	// Additional event-specific fields...
 }
 
-type Market map[string]interface{}
-
-type CleanMarket struct {
-	ID                 string      `json:"id"`
-	Question           string      `json:"question"`
-	Slug               string      `json:"slug"`
-	Description        string      `json:"description"`
-	Image              string      `json:"image"`
-	Icon               string      `json:"icon"`
-	EventImage         string      `json:"eventImage"`
-	Outcomes           []string    `json:"outcomes"`
-	OutcomePrices      []float64   `json:"outcomePrices"`
-	Probabilities      []float64   `json:"probabilities"`
-	Volume             float64     `json:"volume"`
-	VolumeFormatted    string      `json:"volumeFormatted"`
-	Liquidity          float64     `json:"liquidity"`
-	LiquidityFormatted string      `json:"liquidityFormatted"`
-	Volume24hr         float64     `json:"volume24hr"`
-	EndDate            string      `json:"endDate"`
-	Closed             bool        `json:"closed"`
-	Active             bool        `json:"active"`
-	Change24h          interface{} `json:"change24h"`
-	Change1w           interface{} `json:"change1w"`
-	HasOrderBook       bool        `json:"hasOrderBook"`
-	BestBid            interface{} `json:"bestBid"`
-	BestAsk            interface{} `json:"bestAsk"`
-	Tags               []string    `json:"tags"`
-	Category           string      `json:"category"`
-	Ticker             string      `json:"ticker"`
-	IsNew              bool        `json:"isNew"`
-	IsFeatured         bool        `json:"isFeatured"`
-	NegRisk            bool        `json:"negRisk"`
-	TweetCount         int         `json:"tweetCount"`
-	GameStartTime      string      `json:"gameStartTime"`
-	Live               bool        `json:"live"`
+type Series struct {
+	ID                  string  `json:"id"`
+	Ticker              string  `json:"ticker,omitempty"`
+	Slug                string  `json:"slug,omitempty"`
+	Title               string  `json:"title"`
+	SeriesType          string  `json:"seriesType,omitempty"`
+	Recurrence          string  `json:"recurrence,omitempty"`
+	Image               string  `json:"image,omitempty"`
+	Icon                string  `json:"icon,omitempty"`
+	Active              bool    `json:"active"`
+	Closed              bool    `json:"closed"`
+	Archived            bool    `json:"archived"`
+	Featured            bool    `json:"featured"`
+	Restricted          bool    `json:"restricted"`
+	CreatedAt           string  `json:"createdAt,omitempty"`
+	UpdatedAt           string  `json:"updatedAt,omitempty"`
+	Volume              float64 `json:"volume,omitempty"`
+	Liquidity           float64 `json:"liquidity,omitempty"`
+	CommentCount        int     `json:"commentCount,omitempty"`
+	RequiresTranslation bool    `json:"requiresTranslation,omitempty"`
 }
 
-func containsWholeWord(title, word string) bool {
-	titleUpper := strings.ToUpper(title)
-	wordUpper := strings.ToUpper(word)
-
-	// Look for word surrounded by spaces, punctuation, or start/end
-	pattern := `(^|\s|\b)` + regexp.QuoteMeta(wordUpper) + `(\s|\b|$|\.|\?|!)`
-	matched, _ := regexp.MatchString(pattern, titleUpper)
-	return matched
-}
-
-func getEventsByLeague(league string) ([]Event, error) {
-	resp, err := http.Get("https://gamma-api.polymarket.com/events?closed=false&limit=500")
+func getMarketsByLeague(league string) ([]Market, error) {
+	url := "https://gamma-api.polymarket.com/markets?closed=false&sports_market_types=moneyline&sports_market_types=spreads&sports_market_types=totals&sports_market_types=nrfi&sports_market_types=total_goals&sports_market_types=both_teams_to_score&sports_market_types=team_totals&sports_market_types=team_totals_home&sports_market_types=team_totals_away&sports_market_types=first_half_moneyline&sports_market_types=first_half_spreads&sports_market_types=first_half_totals&sports_market_types=anytime_touchdowns&sports_market_types=first_touchdowns&sports_market_types=two_plus_touchdowns&sports_market_types=passing_yards&sports_market_types=passing_touchdowns&sports_market_types=receiving_yards&sports_market_types=receptions&sports_market_types=rushing_yards&sports_market_types=assists&sports_market_types=points&sports_market_types=rebounds&sports_market_types=assists_points_rebounds&sports_market_types=threes&sports_market_types=double_doubles&sports_market_types=correct_score&sports_market_types=match_handicap&sports_market_types=total_games&sports_market_types=parlays&limit=1000"
+	leagueLower := strings.ToLower(league)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err // Network error (e.g., no internet, timeout)
-	}
-	defer resp.Body.Close()
-
-	// Check if the request was successful (HTTP 200)
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad status: %d", resp.StatusCode)
+		return nil, err
 	}
 
-	// Parse the JSON response into a slice of Event (flexible maps)
-	var events []Event
-	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
-		return nil, err // JSON parsing error
+	// Optional: add headers if the API requires them in the future
+	// req.Header.Add("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status: %d", res.StatusCode)
 	}
 
-	// Filter events: keep only those where the title contains the league string
-	var filtered []Event
-	for _, event := range events {
-		if containsWholeWord(event.Title, league) {
-			filtered = append(filtered, event)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var markets []Market
+	if err := json.Unmarshal(body, &markets); err != nil {
+		return nil, err
+	}
+
+	var filteredMarkets []Market
+	fmt.Println("League lower: " + leagueLower)
+	for _, m := range markets {
+		if m.Slug == "" {
+			continue
+		}
+
+		slugLower := strings.ToLower(m.Slug)
+		fmt.Println("slug lower: " + slugLower)
+		// Check if the slug starts with the league prefix
+		if strings.HasPrefix(slugLower, leagueLower+"-") ||
+			strings.HasPrefix(slugLower, leagueLower+"_") { // rare but seen in some slugs
+			fmt.Println(("Match found"))
+			filteredMarkets = append(filteredMarkets, m)
 		}
 	}
 
-	return filtered, nil
+	pretty, err := json.MarshalIndent(filteredMarkets, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(pretty))
+	return filteredMarkets, nil
 }
 
 func main() {
@@ -110,18 +243,20 @@ func main() {
 
 	r.GET("/league/:league", func(c *gin.Context) {
 		league := strings.ToUpper(c.Param("league"))
-		events, err := getEventsByLeague(league)
+		markets, err := getMarketsByLeague(league)
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			// Return 500 with error message if something went wrong
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
-		// This automatically returns JSON!
-		c.JSON(200, gin.H{
-			"league":       league,
-			"market_count": len(events),
-			"events":       events, // ← your filtered slice!
-		})
-
+		// If no markets found, you can return an empty array (or 404 if you prefer)
+		if len(markets) == 0 {
+			c.JSON(http.StatusOK, []Market{}) // or http.StatusNotFound
+			return
+		}
+		c.JSON(http.StatusOK, markets)
 	})
 
 	r.Run(":8000") //prob wanna put this in a config file
