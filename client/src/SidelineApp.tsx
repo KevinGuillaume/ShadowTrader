@@ -1,7 +1,7 @@
 // SidelineApp.tsx
 import { useEffect, useState } from "react";
 import { backendAPI } from "./api";
-import LeagueTab from "./components/LeagueTab";
+import LeagueBody from "./components/LeagueBody";
 
 export default function SidelineApp() {
   const [data, setData] = useState<any[]>([]);
@@ -13,7 +13,7 @@ export default function SidelineApp() {
   async function init() {
     setLoading(true);
     try {
-      const values = await backendAPI.getEventsData(leagueTab);
+      const values = await backendAPI.getPolymarketEventsData(leagueTab);
       setData(values|| []);
     } catch (error) {
       console.error(`Failed to load ${leagueTab} data:`, error);
@@ -78,7 +78,7 @@ export default function SidelineApp() {
             </p>
           </div>
         ) : (
-          <LeagueTab data={data} league={leagueTab} />
+          <LeagueBody data={data} league={leagueTab} />
         )}
       </main>
     </div>

@@ -5,7 +5,7 @@ export class API {
         this.baseURL = baseURL
     }
 
-    async getEventsData(league: string) {
+    async getPolymarketEventsData(league: string) {
         try {
             console.log("Getting backend data for: ", league)
             const response = await fetch(this.baseURL + `/league/${league}`)
