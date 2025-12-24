@@ -65,7 +65,7 @@ type Market struct {
 	UMAReward                    string   `json:"umaReward,omitempty"`
 	AcceptingOrders              bool     `json:"acceptingOrders,omitempty"`
 	NegRisk                      bool     `json:"negRisk"`
-	Events                       []Event  `json:"events,omitempty"` // Nested event objects
+	Events                       []Event  `json:"events,omitempty"`
 	Ready                        bool     `json:"ready,omitempty"`
 	Funded                       bool     `json:"funded,omitempty"`
 	AcceptingOrdersTimestamp     string   `json:"acceptingOrdersTimestamp,omitempty"`
@@ -100,8 +100,7 @@ type Market struct {
 	EnableNegRisk                bool     `json:"enableNegRisk,omitempty"`
 	NegRiskAugmented             bool     `json:"negRiskAugmented,omitempty"`
 	NegRiskMarketID              string   `json:"negRiskMarketID,omitempty"`
-	Series                       []Series `json:"series,omitempty"` // Sometimes present on multi-outcome markets
-	// Add more fields if you encounter them in specific markets
+	Series                       []Series `json:"series,omitempty"`
 }
 
 type Event struct {
@@ -144,7 +143,6 @@ type Event struct {
 	PendingDeployment   bool    `json:"pendingDeployment"`
 	Deploying           bool    `json:"deploying"`
 	RequiresTranslation bool    `json:"requiresTranslation"`
-	// Additional event-specific fields...
 }
 
 type Series struct {
@@ -169,61 +167,61 @@ type Series struct {
 	RequiresTranslation bool    `json:"requiresTranslation,omitempty"`
 }
 
+type Sport struct {
+	Sport      string `json:"sport"`
+	Image      string `json:"image"`
+	Resolution string `json:"resolution"`
+	Ordering   string `json:"ordering"`
+	Tags       string `json:"tags"`
+	Series     string `json:"series"`
+}
+
+var leagueTagIDs = map[string]int{
+	"nba": 745,
+	"nfl": 450,
+}
+
 func getMarketsByLeague(league string) ([]Market, error) {
-	url := "https://gamma-api.polymarket.com/markets?closed=false&sports_market_types=moneyline&sports_market_types=spreads&sports_market_types=totals&sports_market_types=nrfi&sports_market_types=total_goals&sports_market_types=both_teams_to_score&sports_market_types=team_totals&sports_market_types=team_totals_home&sports_market_types=team_totals_away&sports_market_types=first_half_moneyline&sports_market_types=first_half_spreads&sports_market_types=first_half_totals&sports_market_types=anytime_touchdowns&sports_market_types=first_touchdowns&sports_market_types=two_plus_touchdowns&sports_market_types=passing_yards&sports_market_types=passing_touchdowns&sports_market_types=receiving_yards&sports_market_types=receptions&sports_market_types=rushing_yards&sports_market_types=assists&sports_market_types=points&sports_market_types=rebounds&sports_market_types=assists_points_rebounds&sports_market_types=threes&sports_market_types=double_doubles&sports_market_types=correct_score&sports_market_types=match_handicap&sports_market_types=total_games&sports_market_types=parlays&limit=1000"
-	leagueLower := strings.ToLower(league)
+	league = strings.ToLower(league)
+
+	tagID, ok := leagueTagIDs[league]
+	if !ok {
+		return nil, fmt.Errorf("unknown league: %s (supported: nba, nfl)", league)
+	}
+	url := fmt.Sprintf(
+		"https://gamma-api.polymarket.com/markets?sports_market_types=moneyline&closed=false&tag_id=%d",
+		tagID,
+	)
+	fmt.Println((url))
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Optional: add headers if the API requires them in the future
-	// req.Header.Add("Accept", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API request failed with status: %d", res.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API returned %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	body, err := io.ReadAll(res.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
 	var markets []Market
-	if err := json.Unmarshal(body, &markets); err != nil {
-		return nil, err
-	}
-
-	var filteredMarkets []Market
-	fmt.Println("League lower: " + leagueLower)
-	for _, m := range markets {
-		if m.Slug == "" {
-			continue
-		}
-
-		slugLower := strings.ToLower(m.Slug)
-		fmt.Println("slug lower: " + slugLower)
-		// Check if the slug starts with the league prefix
-		if strings.HasPrefix(slugLower, leagueLower+"-") ||
-			strings.HasPrefix(slugLower, leagueLower+"_") { // rare but seen in some slugs
-			fmt.Println(("Match found"))
-			filteredMarkets = append(filteredMarkets, m)
-		}
-	}
-
-	pretty, err := json.MarshalIndent(filteredMarkets, "", "  ")
+	err = json.Unmarshal(bodyBytes, &markets)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
-	fmt.Println(string(pretty))
-	return filteredMarkets, nil
+	return markets, nil
 }
 
 func main() {
@@ -251,7 +249,7 @@ func main() {
 			})
 			return
 		}
-		// If no markets found, you can return an empty array (or 404 if you prefer)
+		// If no markets found, return empty
 		if len(markets) == 0 {
 			c.JSON(http.StatusOK, []Market{}) // or http.StatusNotFound
 			return
