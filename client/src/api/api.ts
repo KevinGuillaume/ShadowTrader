@@ -7,7 +7,7 @@ export class API {
 
     async getEventsData(league: string) {
         try {
-            console.log("Getting backend data...")
+            console.log("Getting backend data for: ", league)
             const response = await fetch(this.baseURL + `/league/${league}`)
             const data = await response.json()
             return data

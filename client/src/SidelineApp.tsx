@@ -8,7 +8,7 @@ export default function SidelineApp() {
   const [leagueTab, setLeagueTab] = useState<string>("NFL");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const leagues = ["nfl", "nba", "mlb","nhl"]; // Can add more later
+  const leagues = ["NFL", "NBA"]; // Can add more later
 
   async function init() {
     setLoading(true);
@@ -35,7 +35,7 @@ export default function SidelineApp() {
           Sideline Trader
         </h1>
         <p className="text-xl text-gray-400">
-          Live Polymarket Odds • {leagueTab.toLocaleUpperCase()} Markets
+          Live Polymarket Odds • {leagueTab} Markets
         </p>
       </header>
 
@@ -55,7 +55,7 @@ export default function SidelineApp() {
                   }
                 `}
               >
-                {league.toLocaleUpperCase()}
+                {league}
               </button>
             ))}
           </nav>
