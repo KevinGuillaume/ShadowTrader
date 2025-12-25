@@ -1,8 +1,48 @@
 package constants
 
+var LeagueToSport = map[string]string{
+	"nfl": "football/nfl",
+	"nba": "basketball/nba",
+}
+
 var LeagueTagIDs = map[string]int{
 	"nba": 745,
 	"nfl": 450,
+}
+
+var NFLTeamIDs = map[string]int{
+	"falcons":    1,
+	"bills":      2,
+	"bears":      3,
+	"bengals":    4,
+	"browns":     5,
+	"cowboys":    6,
+	"broncos":    7,
+	"lions":      8,
+	"packers":    9,
+	"titans":     10,
+	"colts":      11,
+	"chiefs":     12,
+	"raiders":    13,
+	"rams":       14,
+	"dolphins":   15,
+	"vikings":    16,
+	"patriots":   17,
+	"saints":     18,
+	"giants":     19,
+	"jets":       20,
+	"eagles":     21,
+	"cardinals":  22,
+	"steelers":   23,
+	"chargers":   24,
+	"49ers":      25,
+	"seahawks":   26,
+	"buccaneers": 27,
+	"commanders": 28,
+	"panthers":   29,
+	"jaguars":    30,
+	"ravens":     33,
+	"texans":     34,
 }
 
 var NBATeamIDs = map[string]int{

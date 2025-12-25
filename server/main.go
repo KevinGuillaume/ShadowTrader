@@ -24,6 +24,6 @@ func main() {
 	})
 
 	r.GET("/league/:league", handlers.GetLeagueMarkets)
-
+	r.GET("/league/:league/:teamName", handlers.GetRosterForTeam)
 	r.Run(":8000")
 }
