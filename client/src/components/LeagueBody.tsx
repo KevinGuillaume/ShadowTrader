@@ -43,7 +43,7 @@ const LeagueBody: React.FC<LeagueBodyProps> = ({ data, league }) => {
 
       {/* Modal */}
       {selectedMarket && (
-        <MarketModal market={selectedMarket} onClose={closeModal} />
+        <MarketModal market={selectedMarket} league={league} onClose={closeModal} />
       )}
     </div>
   );
