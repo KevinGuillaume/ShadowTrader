@@ -181,7 +181,7 @@ const MarketPage: React.FC = () => {
       <header className="sticky top-0 z-20 bg-gray-900 border-b border-gray-800 px-4 py-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/app")}
             className="flex items-center gap-2 text-gray-300 hover:text-white transition"
           >
             <ArrowLeft size={20} />
