@@ -27,5 +27,16 @@ export class API {
         }
     }
 
+    async getPolymarketMarketByID(id: string) {
+        try {
+            console.log("Getting market backend data for id: ", id)
+            const response = await fetch(this.baseURL + `/market/${id}`)
+            const data = await response.json()
+            return data
+          } catch (err) {
+            console.error('Error getting event details', err);
+        }
+    }
+
     
 }
