@@ -206,31 +206,6 @@ const MarketPage: React.FC = () => {
             />
           </div>
         )}
-
-        {/* Rosters */}
-        {loadingRosters ? (
-          <div className="bg-gray-800 rounded-2xl p-8 text-center mb-10">
-            <p className="text-gray-400 text-lg">Loading team rosters...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-gray-800 rounded-2xl p-8 text-center mb-10">
-            <p className="text-red-400 text-lg">{error}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 mb-12">
-            <TeamRoster
-              teamName={teamAName}
-              players={teamRosterA}
-              isLoading={false}
-            />
-            <TeamRoster
-              teamName={teamBName}
-              players={teamRosterB}
-              isLoading={false}
-            />
-          </div>
-        )}
-
         {/* Description */}
         {market.description && (
           <section className="mb-12">
@@ -278,6 +253,31 @@ const MarketPage: React.FC = () => {
             </div>
           )}
         </section>
+
+        {/* Rosters */}
+        {loadingRosters ? (
+          <div className="bg-gray-800 rounded-2xl p-8 text-center mb-10">
+            <p className="text-gray-400 text-lg">Loading team rosters...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-gray-800 rounded-2xl p-8 text-center mb-10">
+            <p className="text-red-400 text-lg">{error}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 mb-12">
+            <TeamRoster
+              teamName={teamAName}
+              players={teamRosterA}
+              isLoading={false}
+            />
+            <TeamRoster
+              teamName={teamBName}
+              players={teamRosterB}
+              isLoading={false}
+            />
+          </div>
+        )}
+
 
         {/* Extra Info */}
         <section className="text-sm text-gray-500 border-t border-gray-800 pt-8">
