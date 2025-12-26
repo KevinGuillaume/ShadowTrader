@@ -1,20 +1,22 @@
-import { useState } from 'react';
+// src/components/LeagueBody.tsx
+import { useNavigate } from 'react-router-dom';
 import DisplayCard from './DisplayCard';
-import MarketModal from './MarketModal';
+
 interface LeagueBodyProps {
   data: any[];     // Array of markets
   league: string;
 }
 
 const LeagueBody: React.FC<LeagueBodyProps> = ({ data, league }) => {
-  const [selectedMarket, setSelectedMarket] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   const handleCardClick = (market: any) => {
-    setSelectedMarket(market);
-  };
-
-  const closeModal = () => {
-    setSelectedMarket(null);
+    navigate(`/market/${market.id}`, {
+      state: {
+        market,     // pass full market object
+        league,     // pass league for roster fetching
+      },
+    });
   };
 
   if (data.length === 0) {
@@ -36,17 +38,12 @@ const LeagueBody: React.FC<LeagueBodyProps> = ({ data, league }) => {
           <DisplayCard
             key={market.id}
             market={market}
-            onClick={() => handleCardClick(market)} // ← New prop
+            onClick={() => handleCardClick(market)}
           />
         ))}
       </div>
-
-      {/* Modal */}
-      {selectedMarket && (
-        <MarketModal market={selectedMarket} league={league} onClose={closeModal} />
-      )}
     </div>
   );
-}
+};
 
-export default LeagueBody
+export default LeagueBody;
