@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ArrowLeft } from 'lucide-react';
-import { backendAPI } from '../api'; // adjust path as needed
-import TeamRoster from '../components/TeamRoster'; // adjust path as needed
+import { backendAPI } from '../api';
+import TeamRoster from '../components/TeamRoster';
 
 interface ESPNAthlete {
   id: string;
@@ -19,12 +19,22 @@ interface ESPNAthlete {
   };
 }
 
+// New type for the stats from your Go backend
+interface PlayerVsStats {
+  gamesPlayed: number;
+  avgPoints: number;
+  avgRebounds: number;
+  avgAssists: number;
+  avgSteals: number;
+  avgBlocks: number;
+  avgFGPercentage: number;
+}
+
 const MarketPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  // Data that might come from navigation state (fast path)
   const passedMarket = state?.market;
   const passedLeague = state?.league;
 
@@ -35,16 +45,17 @@ const MarketPage: React.FC = () => {
   const [loadingRosters, setLoadingRosters] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 1: Load market data (either from state or fetch by ID)
+  // NEW: Store stats for each player (key = athlete ID)
+  const [playerStats, setPlayerStats] = useState<Record<string, PlayerVsStats | 'loading' | 'error'>>({});
+
+  // Step 1: Load market data
   useEffect(() => {
-    // Fast path: we already have the market from navigation state
     if (passedMarket) {
       setMarket(passedMarket);
       setLoadingMarket(false);
       return;
     }
 
-    // Slow path: direct access / refresh / bookmark → fetch by ID
     if (!id) {
       setError("No market ID provided");
       setLoadingMarket(false);
@@ -54,7 +65,6 @@ const MarketPage: React.FC = () => {
     const fetchMarketById = async () => {
       setLoadingMarket(true);
       setError(null);
-
       try {
         const marketData = await backendAPI.getPolymarketMarketByID(id);
         setMarket(marketData);
@@ -69,25 +79,14 @@ const MarketPage: React.FC = () => {
     fetchMarketById();
   }, [id, passedMarket]);
 
-
   const getLeagueFromSlug = (slug: string): string => {
-    if (!slug) return 'nba'; // ultimate fallback only if everything fails
-  
-    const parts = slug.split('-');
-    if (parts.length < 1) return 'nba';
-  
-    const prefix = parts[0].toLowerCase();
-  
-    // Optional: validate known leagues to prevent garbage
+    if (!slug) return 'nba';
+    const prefix = slug.split('-')[0]?.toLowerCase();
     const knownLeagues = ['nba', 'nfl', 'mlb', 'nhl', 'soccer', 'ufc'];
-    if (knownLeagues.includes(prefix)) {
-      return prefix;
-    }
-  
-    return 'nba'; // fallback only for unknown
+    return knownLeagues.includes(prefix) ? prefix : 'nba';
   };
 
-  // Step 2: Load rosters once we have market data
+  // Step 2: Load rosters
   useEffect(() => {
     if (!market?.question) return;
 
@@ -97,13 +96,10 @@ const MarketPage: React.FC = () => {
 
       try {
         const teams = market.question.split(" vs. ").map((t: string) => t.trim());
-
-        if (teams.length !== 2) {
-          throw new Error("Market question doesn't contain two teams in 'TeamA vs. TeamB' format");
-        }
+        if (teams.length !== 2) throw new Error("Invalid market format");
 
         const [teamA, teamB] = teams;
-        const league = getLeagueFromSlug(market.slug) || passedLeague || 'nba';// flexible fallback
+        const league = getLeagueFromSlug(market.slug) || passedLeague || 'nba';
 
         const [rosterA, rosterB] = await Promise.all([
           backendAPI.getESPNRostersForTeam(league, teamA),
@@ -112,18 +108,45 @@ const MarketPage: React.FC = () => {
 
         setTeamRosterA(rosterA || []);
         setTeamRosterB(rosterB || []);
+
+        // Initialize all players as 'loading'
+        const initialStats: Record<string, 'loading'> = {};
+        [...(rosterA || []), ...(rosterB || [])].forEach(p => {
+          initialStats[p.id] = 'loading';
+        });
+        setPlayerStats(initialStats);
+
+        // Fetch stats for Team A players vs Team B
+        for (const player of rosterA || []) {
+          fetchPlayerStats(player.id, league, teamB);
+        }
+        // Fetch stats for Team B players vs Team A
+        for (const player of rosterB || []) {
+          fetchPlayerStats(player.id, league, teamA);
+        }
+
       } catch (err) {
         console.error("Failed to load rosters:", err);
-        setError("Could not load team rosters. Please try again later.");
+        setError("Could not load team rosters.");
       } finally {
         setLoadingRosters(false);
       }
     };
 
-    fetchRosters();
-  }, [market?.question, passedLeague, market?.league]);
+    const fetchPlayerStats = async (athleteId: string, league: string, opponent: string) => {
+      try {
+        const stats = await backendAPI.getPlayerAveragesVsOpponent(athleteId, league, opponent);
+        setPlayerStats(prev => ({ ...prev, [athleteId]: stats }));
+      } catch (err) {
+        console.error(`Failed to load stats for player ${athleteId}`, err);
+        setPlayerStats(prev => ({ ...prev, [athleteId]: 'error' }));
+      }
+    };
 
-  // Helper to safely parse JSON arrays
+    fetchRosters();
+  }, [market?.question, passedLeague, market?.slug]);
+
+  // Rest of your parsing (unchanged)
   const parseJsonArray = (field: string | undefined | null): any[] => {
     if (!field || typeof field !== 'string') return [];
     try {
@@ -151,7 +174,6 @@ const MarketPage: React.FC = () => {
     ? market.question.split(" vs. ").map((t: string) => t.trim())
     : ['Team A', 'Team B'];
 
-  // Loading / error states
   if (loadingMarket) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-400">
@@ -165,10 +187,7 @@ const MarketPage: React.FC = () => {
       <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center text-white p-6">
         <h1 className="text-3xl font-bold mb-4">Error</h1>
         <p className="text-red-400 text-xl mb-8 text-center">{error}</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition"
-        >
+        <button onClick={() => navigate(-1)} className="px-8 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
           Go Back
         </button>
       </div>
@@ -177,13 +196,9 @@ const MarketPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Sticky Header */}
       <header className="sticky top-0 z-20 bg-gray-900 border-b border-gray-800 px-4 py-4 md:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate("/app")}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition"
-          >
+          <button onClick={() => navigate("/app")} className="flex items-center gap-2 text-gray-300 hover:text-white transition">
             <ArrowLeft size={20} />
             <span>Back to Markets</span>
           </button>
@@ -194,53 +209,70 @@ const MarketPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
-        {/* Image */}
         {market.image && (
           <div className="mb-10">
-            <img
-              src={market.image}
-              alt="Market illustration"
-              className="w-full h-64 md:h-80 object-cover rounded-2xl shadow-xl"
-            />
+            <img src={market.image} alt="Market illustration" className="w-full h-64 md:h-80 object-cover rounded-2xl shadow-xl" />
           </div>
         )}
-        {/* Description */}
+
         {market.description && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">Description</h2>
-            <p className="text-gray-300 whitespace-pre-line leading-relaxed">
-              {market.description}
-            </p>
+            <p className="text-gray-300 leading-relaxed">{market.description}</p>
           </section>
         )}
 
-        {/* Outcomes */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">Outcomes</h2>
-          {outcomes.length > 0 ? (
-            <div className="space-y-4">
-              {outcomes.map((outcome: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-800 p-5 rounded-xl border border-gray-700"
-                >
-                  <span className="text-lg font-medium">{outcome}</span>
-                  {outcomePrices[idx] !== undefined && (
-                    <span className="text-blue-400 font-bold text-2xl mt-3 sm:mt-0">
-                      {(outcomePrices[idx] * 100).toFixed(0)}%
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No outcomes available</p>
-          )}
-        </section>
+<section className="mb-12">
+  <h2 className="text-2xl font-semibold mb-6">Outcomes</h2>
 
-        {/* Dates */}
+  {outcomes.length > 0 ? (
+    <div className="space-y-4">
+      {outcomes.map((outcome: string, idx: number) => {
+        const price = outcomePrices[idx] ?? 0;
+        const percentage = Math.round(price * 100);
+        const isDefined = outcomePrices[idx] !== undefined;
+
+        return (
+          <div
+            key={idx}
+            className="relative bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+          >
+            {/* Dynamic background bar that grows with probability */}
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-blue-500/10 transition-all duration-700 ease-out"
+              style={{ width: `${percentage}%` }}
+            />
+
+            {/* Main content */}
+            <div className="relative flex items-center justify-between px-6 py-5">
+              <div className="flex-1 pr-6">
+                <span className="text-lg font-medium text-white truncate">
+                  {outcome}
+                </span>
+              </div>
+
+              <div className="min-w-[6ch] text-right">
+                {isDefined ? (
+                  <span className="text-2xl font-bold text-blue-300 tracking-tight">
+                    {percentage}%
+                  </span>
+                ) : (
+                  <span className="text-gray-500 text-xl">—</span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="text-gray-500 text-center py-8 italic">
+      No outcomes available
+    </p>
+  )}
+</section>
+
         <section className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
             <h3 className="text-gray-400 mb-2">Market Ends</h3>
@@ -254,7 +286,6 @@ const MarketPage: React.FC = () => {
           )}
         </section>
 
-        {/* Rosters */}
         {loadingRosters ? (
           <div className="bg-gray-800 rounded-2xl p-8 text-center mb-10">
             <p className="text-gray-400 text-lg">Loading team rosters...</p>
@@ -269,24 +300,24 @@ const MarketPage: React.FC = () => {
               teamName={teamAName}
               players={teamRosterA}
               isLoading={false}
+              opponentName={teamBName}
+              playerStats={playerStats}
             />
             <TeamRoster
               teamName={teamBName}
               players={teamRosterB}
               isLoading={false}
+              opponentName={teamAName}
+              playerStats={playerStats}
             />
           </div>
         )}
 
-
-        {/* Extra Info */}
         <section className="text-sm text-gray-500 border-t border-gray-800 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <p><span className="font-medium text-gray-300">ID:</span> {market.id}</p>
             {market.slug && <p><span className="font-medium text-gray-300">Slug:</span> {market.slug}</p>}
-            {market.conditionId && (
-              <p><span className="font-medium text-gray-300">Condition ID:</span> {market.conditionId}</p>
-            )}
+            {market.conditionId && <p><span className="font-medium text-gray-300">Condition ID:</span> {market.conditionId}</p>}
           </div>
         </section>
       </main>
