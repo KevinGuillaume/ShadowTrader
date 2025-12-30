@@ -54,3 +54,22 @@ func GetMarketByID(c *gin.Context) {
 	c.JSON(http.StatusOK, market)
 
 }
+
+func GetPlayerStatsVsTeam(c *gin.Context) {
+	athleteID := c.Param("atheleteID")
+	league := c.Param("league")
+	opponent := c.Param("opponent")
+
+	if league == "" || opponent == "" {
+		c.JSON(400, gin.H{"error": "league and opponent required"})
+		return
+	}
+
+	averages, err := services.GetPlayerAveragesVsOpponent(league, athleteID, opponent)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, averages)
+}

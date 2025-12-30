@@ -25,6 +25,7 @@ func main() {
 
 	r.GET("/league/:league", handlers.GetLeagueMarkets)
 	r.GET("/league/:league/:teamName", handlers.GetRosterForTeam)
+	r.GET("/player/stats/:league/:atheleteID/:opponent", handlers.GetPlayerStatsVsTeam)
 	r.GET("/market/:marketID", handlers.GetMarketByID)
 	r.Run(":8000")
 }
