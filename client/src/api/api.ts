@@ -37,6 +37,16 @@ export class API {
             console.error('Error getting event details', err);
         }
     }
+    async getPlayerAveragesVsOpponent(athleteId: string, league: string, opponent: string) {
+        try {
+            console.log("Getting players stats...")
+            const response = await fetch(this.baseURL + `/player/stats/${league}/${athleteId}/${opponent}`)
+            const data = await response.json()
+            return data
+          } catch (err) {
+            console.error('Error getting event details', err);
+        }
+    }
 
     
 }
