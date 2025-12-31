@@ -40,7 +40,7 @@ export class API {
     async getPlayerAveragesVsOpponent(athleteId: string, league: string, opponent: string) {
         try {
             console.log("Getting players stats...")
-            const response = await fetch(this.baseURL + `/player/stats/${league}/${athleteId}/${opponent}`)
+            const response = await fetch(this.baseURL + `/player/${league}/${athleteId}/stats-vs/${opponent}`)
             const data = await response.json()
             return data
           } catch (err) {
