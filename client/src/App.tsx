@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "./HomePage";
-import SidelineApp from "./SidelineApp";
-import MarketPage from "./components/MarketPage";
+import HomePage from "./pages/HomePage";
+import SidelineApp from "./pages/SidelineApp";
+import MarketPage from "./pages/MarketPage";
 
 function App() {
   return (

@@ -1,7 +1,7 @@
 // SidelineApp.tsx
 import { useEffect, useState } from "react";
-import { backendAPI } from "./api";
-import LeagueBody from "./components/LeagueBody";
+import { backendAPI } from "../api";
+import LeagueBody from "../components/LeagueBody";
 
 export default function SidelineApp() {
   const [data, setData] = useState<any[]>([]);
