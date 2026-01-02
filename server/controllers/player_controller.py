@@ -3,7 +3,6 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from resources.constants import LEAGUE_TO_SPORT
 
-
 class PlayerAveragesVsOpponent(BaseModel):
     games_played: int = 0
     avg_points: float = 0.0
@@ -30,7 +29,6 @@ class NFLPlayerAveragesVsOpponent(BaseModel):
 class PlayerController:
     def __init__(self):
         self.test = "test"
-    
     async def get_nba_player_averages_vs_opponent(
         self,
         league: str,
@@ -169,7 +167,6 @@ class PlayerController:
 
             except aiohttp.ClientError as e:
                 raise ValueError(f"Failed to fetch ESPN gamelog: {str(e)}")
-
 
 
     async def get_nfl_player_averages_vs_opponent(

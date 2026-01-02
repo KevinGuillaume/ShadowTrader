@@ -1,7 +1,6 @@
 import aiohttp
 import json
 from typing import List, Optional
-
 from resources.constants import LEAGUE_TAG_IDS, LEAGUE_TO_SPORT, NBA_TEAM_IDS, NFL_TEAM_IDS
 
 class LeagueController:
@@ -114,7 +113,8 @@ class LeagueController:
         """
         league = league.lower()
         team_name = team_name.lower()
-
+        # Default positions to search for so it doesn't return like 50 people back
+        skill_positions = ["QB", "RB", "WR", "TE", "P", "K"]
         # Get sport path
         sport_path = LEAGUE_TO_SPORT.get(league)
         if sport_path is None:
@@ -151,7 +151,6 @@ class LeagueController:
 
                     # Flatten players
                     players = []
-
                     # NBA: athletes is already a flat list of players
                     if league == "nba" and isinstance(athletes_data, list):
                         players = [p for p in athletes_data if p and p.get("id")]
@@ -164,10 +163,14 @@ class LeagueController:
                                 for player in items:
                                     if player and player.get("id"):
                                         players.append(player)
-
-                    else:
-                        print(f"Warning: Unexpected roster structure for {league}: {athletes_data}")
-                        return []
+                    
+                    # Apply skill position filter for NFL only
+                    if league == "nfl" and skill_positions:
+                        allowed = {p.upper() for p in skill_positions}
+                        players = [
+                            p for p in players
+                            if p.get("position", {}).get("abbreviation", "").upper() in allowed
+                        ]
 
                     print(f"Found {len(players)} players for {team_name} ({league})")
                     return players

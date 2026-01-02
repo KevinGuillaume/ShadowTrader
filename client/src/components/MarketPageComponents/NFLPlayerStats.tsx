@@ -40,7 +40,7 @@ const NFLPlayerStats: React.FC<{
     {/* Rushing Yards – for RBs/QBs */}
     {stats.avg_rushing_yards !== null && (
       <div>
-        <span className="text-2xl font-bold text-green-400">
+        <span className="text-2xl font-bold text-blue-400">
           {stats.avg_rushing_yards.toFixed(0)}
         </span>
         <span className="text-xs text-gray-500 ml-1">Rush Yds</span>
@@ -50,7 +50,7 @@ const NFLPlayerStats: React.FC<{
     {/* Receiving Yards – for WRs/TEs/RBs */}
     {stats.avg_receiving_yards !== null && (
       <div>
-        <span className="text-xl font-semibold text-purple-400">
+        <span className="text-xl font-semibold text-white">
           {stats.avg_receiving_yards.toFixed(0)}
         </span>
         <span className="text-xs text-gray-500 ml-1">Rec Yds</span>
