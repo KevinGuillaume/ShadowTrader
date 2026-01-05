@@ -19,18 +19,21 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",      # dev
-        "http://localhost:5173",      # Vite default
-        "*"                           # temporary - tighten later!
+        "http://localhost:5173/",          # Vite default dev server
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",          # if using Create React App
+        "http://127.0.0.1:3000",
+        "*"                               # Temporary: allow all (for dev only!)
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],                  # Allow GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],                  # Allow any headers
 )
 
 # Include API routers with prefix
 app.include_router(league_router)
 app.include_router(player_router)
+
 
 # Root endpoint - health check
 @app.get("/", response_class=JSONResponse)
