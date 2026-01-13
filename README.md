@@ -4,4 +4,8 @@ a sports analyzer of the current season. So far only supports NFL and NBA. Good 
 react + ts
 
 ### Server:
-Golang
+python
+
+install requirements.txt
+
+run server using: `uvicorn main:ap --port <YOUR_PORT> --reload`
