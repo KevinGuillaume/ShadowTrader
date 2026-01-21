@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from resources.singletons import league_controller
+from resources.singletons import supabase
 
 league_router = APIRouter(
     prefix="/api/v1/league",
@@ -14,6 +15,15 @@ async def get_league_markets(
     league: str
 ):
     """Gets all markets associated with a league"""
+    print("Supabase connection: ", supabase)
+    response = supabase.table('players').select("*").execute()
+    todos = response.data
+    print("Raw response:", response)
+    print("Data:", response.data)
+    print("Data length:", len(response.data))
+
+    for todo in todos:
+        print(todo)
     return await league_controller.get_markets_by_league(league)
 
 
