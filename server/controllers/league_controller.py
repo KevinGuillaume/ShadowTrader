@@ -2,10 +2,13 @@ import aiohttp
 import json
 from typing import List, Optional
 from resources.constants import LEAGUE_TAG_IDS, LEAGUE_TO_SPORT, NBA_TEAM_IDS, NFL_TEAM_IDS
+from supabase import Client
+
 
 class LeagueController:
-    def __init__(self):
+    def __init__(self, db: Client):
         self.test = "test"
+        self.db = db
     
     
     async def get_markets_by_league(self,league: str):
@@ -102,78 +105,34 @@ class LeagueController:
         team_name: str,
     ):
         """
-        Fetch the roster for a team in a given league from ESPN's API.
+        Fetch the roster for a team in a given league from our DB.
 
         Args:
             league: The league slug (e.g., "nba", "nfl")
             team_name: The lowercase team slug (e.g., "lakers", "chiefs")
         Raises:
-            ValueError: For invalid league, unknown team, or API errors
+            ValueError: For invalid league, unknown team, or other errors
             aiohttp.ClientError: For network issues
         """
         league = league.lower()
         team_name = team_name.lower()
         # Default positions to search for so it doesn't return like 50 people back
         skill_positions = ["QB", "RB", "WR", "TE", "P", "K"]
-        # Get sport path
-        sport_path = LEAGUE_TO_SPORT.get(league)
-        if sport_path is None:
-            raise ValueError(f"Unsupported league: {league}")
+        league_map = {
+            "nfl": 1,
+            "nba": 2
+        }
 
-        # Get team ID based on league
-        team_id_map = None
-        if league == "nba":
-            team_id_map = NBA_TEAM_IDS
-        elif league == "nfl":
-            team_id_map = NFL_TEAM_IDS
-        else:
-            raise ValueError(f"Unsupported league: {league}")
+        
+        response = (
+            self.db
+            .table("players")
+            .select("*, teams!inner(*)")
+            .ilike("teams.team_name", f"%{team_name}%")
+            .eq("teams.league_id", league_map[league])
+            .execute()
+        )
 
-        team_id = team_id_map.get(team_name)
-        if team_id is None:
-            raise ValueError(f"Unknown team: {team_name} in league {league}")
+        return response.data
 
-        url = f"https://site.web.api.espn.com/apis/site/v2/sports/{sport_path}/teams/{team_id}/roster"
-
-        print(f"Fetching ESPN roster: {url}")  # Debug log
-
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.get(url, timeout=15) as response:
-                    if response.status != 200:
-                        error_text = await response.text()
-                        raise ValueError(f"ESPN returned {response.status}: {error_text}")
-
-                    data = await response.json()
-
-                    # Extract the athletes data (could be flat or nested)
-                    athletes_data = data.get("athletes", [])
-
-                    # Flatten players
-                    players = []
-                    # NBA: athletes is already a flat list of players
-                    if league == "nba" and isinstance(athletes_data, list):
-                        players = [p for p in athletes_data if p and p.get("id")]
-
-                    # NFL: athletes is list of position groups, each with "items"
-                    elif league == "nfl" and isinstance(athletes_data, list):
-                        for position_group in athletes_data:
-                            items = position_group.get("items", [])
-                            if isinstance(items, list):
-                                for player in items:
-                                    if player and player.get("id"):
-                                        players.append(player)
-                    
-                    # Apply skill position filter for NFL only
-                    if league == "nfl" and skill_positions:
-                        allowed = {p.upper() for p in skill_positions}
-                        players = [
-                            p for p in players
-                            if p.get("position", {}).get("abbreviation", "").upper() in allowed
-                        ]
-
-                    print(f"Found {len(players)} players for {team_name} ({league})")
-                    return players
-
-            except aiohttp.ClientError as e:
-                raise ValueError(f"Failed to fetch roster from ESPN: {str(e)}")
+        
