@@ -1,14 +1,24 @@
 export interface ESPNAthlete {
     id: string;
-    fullName: string;
+    team_id: number
+    first_name: string;
+    last_name: string;
     jersey?: string;
-    position?: {
-      name: string;
-      abbreviation: string;
-    };
-    headshot?: {
-      href: string;
-    };
+    position?: string;
+    status: string;
+    teams?: DBTeamObject
+    created_at: string
+    photo_url: string
+}
+
+export interface DBTeamObject {
+  id: number;
+  team_name: string;
+  abbreviation: string;
+  logo_url?: string;
+  venue_id: number;
+  league_id: number;
+  created_at: string;
 }
   
 export interface TeamRosterProps {

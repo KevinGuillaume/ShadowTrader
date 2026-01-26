@@ -32,7 +32,7 @@ const TeamRoster: React.FC<TeamRosterProps> = ({
       }
 
       // Alphabetical fallback for no games
-      return a.fullName.localeCompare(b.fullName);
+      return a.last_name.localeCompare(b.last_name);
     });
   }, [players, playerStats, league]);
 
@@ -69,10 +69,10 @@ const TeamRoster: React.FC<TeamRosterProps> = ({
               >
                 {/* Headshot */}
                 <div className="flex-shrink-0">
-                  {player.headshot?.href ? (
+                  {player?.photo_url ? (
                     <img
-                      src={player.headshot.href}
-                      alt={player.fullName}
+                      src={player?.photo_url}
+                      alt={player.first_name + " " + player.last_name}
                       className="w-16 h-16 object-cover rounded-full border-2 border-gray-600"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
@@ -94,12 +94,12 @@ const TeamRoster: React.FC<TeamRosterProps> = ({
                       </span>
                     )}
                     <span className="text-lg font-semibold text-white truncate">
-                      {player.fullName}
+                      {player.first_name + " " + player.last_name}
                     </span>
                   </div>
 
                   <div className="mt-1 text-sm text-gray-400">
-                    {player.position?.abbreviation || player.position?.name || 'Unknown Position'}
+                    {player?.position  || 'Unknown Position'}
                   </div>
 
                   {/* Dynamic Stats */}
