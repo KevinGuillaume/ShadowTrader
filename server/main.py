@@ -6,6 +6,8 @@ import uvicorn
 
 from routes.league_router import league_router
 from routes.player_router import player_router
+from routes.market_router import market_router
+
 
 app = FastAPI(
     title="Sports Prediction Market API",
@@ -33,6 +35,8 @@ app.add_middleware(
 # Include API routers with prefix
 app.include_router(league_router)
 app.include_router(player_router)
+app.include_router(market_router)
+market_router
 
 
 # Root endpoint - health check
