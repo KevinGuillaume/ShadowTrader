@@ -1,3 +1,5 @@
+import type { FullTeamPlayersAverages, PlayerVsTeamStats } from "../types/types"
+
 export class API {
     private baseURL: string
 
@@ -37,14 +39,15 @@ export class API {
             console.error('Error getting event details', err);
         }
     }
-    async getPlayerAveragesVsOpponent(athleteId: string, league: string, opponent: string) {
+    async getTeamsPlayerStats(team: string, league: string, opponent: string): Promise<FullTeamPlayersAverages> {
         try {
-            console.log("Getting players stats...")
-            const response = await fetch(this.baseURL + `/player/${league}/${athleteId}/stats-vs/${opponent}`)
-            const data = await response.json()
+            console.log("Getting teams player stats...")
+            const response = await fetch(this.baseURL + `/player/${league}/${team}/stats-vs/${opponent}`)
+            const data: FullTeamPlayersAverages = await response.json()
             return data
           } catch (err) {
             console.error('Error getting event details', err);
+            throw new Error('Unknown error fetching team player stats');
         }
     }
 
