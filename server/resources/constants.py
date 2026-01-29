@@ -10,6 +10,11 @@ LEAGUE_TO_SPORT = {
     "nba": "basketball/nba",
 }
 
+LEAGUE_NAME_TO_LEAGUE_ID = {
+    "nfl": 1,
+    "nba": 2
+}
+
 # League tag IDs (used in some ESPN API endpoints or filters)
 LEAGUE_TAG_IDS = {
     "nba": 745,

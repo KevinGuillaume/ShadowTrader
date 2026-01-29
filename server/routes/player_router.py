@@ -8,19 +8,17 @@ player_router = APIRouter(
 )
 
 @player_router.get(
-    "/{league}/{athleteID}/stats-vs/{opponent}",
-    name="Gets a players stats against a teams for the given season from ESPN"
+    "/{league}/{team_name}/stats-vs/{opponent}",
+    name="Gets all players stat averages on a team against a teams"
 )
-async def get_players_stats_vs_team(
+def get_players_stats_vs_team(
     league: str,
-    athleteID: str,
+    team_name: str,
     opponent: str
 ):  
-    """Gets a players stats against a teams for the given season from ESPN"""
+    """Gets all players stat averages on a team against a teams"""
     if league == "nba":
-        return await player_controller.get_nba_player_averages_vs_opponent(league,athleteID,opponent)
-    elif league == "nfl":
-        return await player_controller.get_nfl_player_averages_vs_opponent(league,athleteID,opponent)
+        return player_controller.get_full_team_players_averages(league,team_name,opponent)
 
     else:
         return "League not supported"
