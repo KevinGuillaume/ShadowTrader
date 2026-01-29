@@ -5,10 +5,10 @@ import LeagueBody from "../components/LeagueBody";
 
 export default function SidelineApp() {
   const [data, setData] = useState<any[]>([]);
-  const [leagueTab, setLeagueTab] = useState<string>("NFL");
+  const [leagueTab, setLeagueTab] = useState<string>("NBA");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const leagues = ["NFL", "NBA"]; // Can add more later
+  const leagues = ["NBA", "NFL"]; // Can add more later
 
   async function init() {
     setLoading(true);
@@ -32,7 +32,7 @@ export default function SidelineApp() {
       {/* Header */}
       <header className="text-center py-12">
         <h1 className="text-5xl md:text-6xl font-bold mb-4">
-          Sideline Trader
+          VersusIQ
         </h1>
         <p className="text-xl text-gray-400">
           Live Polymarket Odds • {leagueTab} Markets

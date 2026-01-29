@@ -54,15 +54,12 @@ const DisplayCard: React.FC<DisplayCardProps> = ({ market, onClick }) => {
 
   // Dates (using date-fns for clean formatting)
   const endDate = market.endDate ? new Date(market.endDate) : null;
-  const startDate = market.startDate ? new Date(market.startDate) : null;
 
   const formattedEndDate = endDate
     ? format(endDate, 'MMM d, yyyy') // e.g., Dec 25, 2025 8:00 PM
     : 'TBD';
 
-  const formattedStartDate = startDate
-    ? format(startDate, 'MMM d, yyyy')
-    : null;
+
 
   const imageUrl = market.image || market.icon || null;
 

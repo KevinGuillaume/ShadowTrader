@@ -1,25 +1,41 @@
 // src/pages/MarketPage/index.tsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMarketData } from '../hooks/useMarketData';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import MarketHeader from '../components/MarketPageComponents/MarketHeader';
 import MarketOutcomes from '../components/MarketPageComponents/MarketOutcomes';
 import MarketDates from '../components/MarketPageComponents/MarketDates';
-import MarketRosters from '../components/MarketPageComponents/MarketRosters';
 import MarketFooter from '../components/MarketPageComponents/MarketFooter';
+import MarketRosters from '../components/MarketPageComponents/MarketRosters';
+import { backendAPI } from '../api';
 
 const MarketPage: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    market,
-    loadingMarket,
-    teamRosterA,
-    teamRosterB,
-    loadingRosters,
-    playerStats,
-    error,
-    league,
-  } = useMarketData();
+  const { id } = useParams<{ id: string }>();
+  const [market,setMarket] = useState<any>([])
+  const [loadingMarket,setLoadingMarket] = useState(true)
+  const [error,setError] = useState("")
+  const [league,setLeague] = useState("")
+
+  async function init() {
+    if(id) {
+      try {
+        const marketInfo = await backendAPI.getPolymarketMarketByID(id)
+        console.log(marketInfo)
+        const leagueExtracted = marketInfo?.slug.split('-')[0] 
+        setLeague(leagueExtracted)
+        setMarket(marketInfo)
+        setLoadingMarket(false)
+        
+      } catch (error) {
+        setError("error fetching market")
+      }
+    }
+  }
+
+  useEffect(() => {
+    init()
+  },[id])
+
 
   if (loadingMarket) {
     return (
@@ -59,7 +75,6 @@ const MarketPage: React.FC = () => {
         title={market.question || market.title || 'Market Details'}
         onBack={() => navigate("/app")}
       />
-
       <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
         {market.image && (
           <div className="mb-10">
@@ -70,36 +85,31 @@ const MarketPage: React.FC = () => {
             />
           </div>
         )}
-
         {market.description && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">Description</h2>
             <p className="text-gray-300 leading-relaxed">{market.description}</p>
           </section>
         )}
-
         <MarketOutcomes
           outcomes={parseJsonArray(market.outcomes)}
           outcomePrices={parseJsonArray(market.outcomePrices)}
         />
-
         <MarketDates
           endDate={market.endDate}
           startDate={market.startDate}
         />
-
-        <MarketRosters
-          league={league}
-          teamAName={teamAName}
-          teamBName={teamBName}
-          teamRosterA={teamRosterA}
-          teamRosterB={teamRosterB}
-          loadingRosters={loadingRosters}
-          error={error}
-          playerStats={playerStats}
-        />
-
+        {league && (
+          <MarketRosters
+            teamA={teamAName}
+            teamB={teamBName}
+            league={league}
+          />
+        )}
         <MarketFooter market={market} />
+
+
+
       </main>
     </div>
   );
