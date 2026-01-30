@@ -6,6 +6,7 @@ import MarketOutcomes from '../components/MarketPageComponents/MarketOutcomes';
 import MarketDates from '../components/MarketPageComponents/MarketDates';
 import MarketFooter from '../components/MarketPageComponents/MarketFooter';
 import MarketRosters from '../components/MarketPageComponents/MarketRosters';
+import BasketballCourt3D from '../components/MarketPageComponents/BasketballCourt3D';
 import { backendAPI } from '../api';
 
 const MarketPage: React.FC = () => {
@@ -15,6 +16,8 @@ const MarketPage: React.FC = () => {
   const [loadingMarket,setLoadingMarket] = useState(true)
   const [error,setError] = useState("")
   const [league,setLeague] = useState("")
+  const [percentageTeamA,setPercentageTeamA] = useState(0)
+  const [percentageTeamB,setPercentageTeamB] = useState(0)
 
   async function init() {
     if(id) {
@@ -26,6 +29,20 @@ const MarketPage: React.FC = () => {
         setMarket(marketInfo)
         setLoadingMarket(false)
         
+
+        // Calculate market outcome percentages
+        
+        const priceArr = parseJsonArray(marketInfo.outcomePrices)
+
+
+        const price1 = priceArr[0] ?? 0;
+        const price2 = priceArr[1] ?? 0;
+
+        const percentage1 = Math.round(price1 * 100);
+        const percentage2 = Math.round(price2 * 100);
+
+        setPercentageTeamA(percentage1)
+        setPercentageTeamB(percentage2)
       } catch (error) {
         setError("error fetching market")
       }
@@ -35,6 +52,11 @@ const MarketPage: React.FC = () => {
   useEffect(() => {
     init()
   },[id])
+
+
+  
+
+
 
 
   if (loadingMarket) {
@@ -70,21 +92,20 @@ const MarketPage: React.FC = () => {
     : ['Team A', 'Team B'];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div
+      className="min-h-screen text-white"
+      style={{
+        background: 'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(255, 255, 255, 0.25) 0%, rgba(150, 180, 255, 0.12) 35%, #030712 65%)',
+        backgroundColor: '#030712'
+      }}
+    >
       <MarketHeader
         title={market.question || market.title || 'Market Details'}
         onBack={() => navigate("/app")}
       />
       <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
-        {market.image && (
-          <div className="mb-10">
-            <img
-              src={market.image}
-              alt="Market illustration"
-              className="w-full h-64 md:h-80 object-cover rounded-2xl shadow-xl"
-            />
-          </div>
-        )}
+        
+        <BasketballCourt3D teamA={teamAName} teamB={teamBName} percentA={percentageTeamA} percentB={percentageTeamB}/>
         {market.description && (
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">Description</h2>

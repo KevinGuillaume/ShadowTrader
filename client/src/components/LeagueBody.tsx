@@ -1,6 +1,7 @@
 // src/components/LeagueBody.tsx
 import { useNavigate } from 'react-router-dom';
 import DisplayCard from './DisplayCard';
+import { isBefore } from 'date-fns';
 
 interface LeagueBodyProps {
   data: any[];     // Array of markets
@@ -9,6 +10,7 @@ interface LeagueBodyProps {
 
 const LeagueBody: React.FC<LeagueBodyProps> = ({ data, league }) => {
   const navigate = useNavigate();
+  const today = new Date();
 
   const handleCardClick = (market: any) => {
     navigate(`/market/${market.id}`, {
@@ -34,13 +36,24 @@ const LeagueBody: React.FC<LeagueBodyProps> = ({ data, league }) => {
       </h1>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.map((market) => (
-          <DisplayCard
-            key={market.id}
-            market={market}
-            onClick={() => handleCardClick(market)}
-          />
-        ))}
+        {data.map((market) => {
+            let endDate: any = market.endDate ? new Date(market.endDate) : null;
+
+
+
+          if(!isBefore(endDate, today)){ // if its not old
+            console.log()
+            return <DisplayCard
+              key={market.id}
+              market={market}
+              onClick={() => handleCardClick(market)}
+            />
+          }
+          else{
+            return <></>
+          }
+          
+          })}
       </div>
     </div>
   );

@@ -108,10 +108,6 @@ const DisplayCard: React.FC<DisplayCardProps> = ({ market, onClick }) => {
   }
 
 
-  // Truncate description (show first 2-3 lines)
-  const description = market.description
-    ? market.description.split('\n').slice(0, 3).join('\n').trim()
-    : null;
 
   return (
     <div 
@@ -180,12 +176,6 @@ const DisplayCard: React.FC<DisplayCardProps> = ({ market, onClick }) => {
           </div>
         </div>
 
-        {/* Description (truncated) */}
-        {description && (
-          <div className="text-sm text-gray-300 mb-4 line-clamp-4">
-            {description}
-          </div>
-        )}
 
         {/* Status Badges */}
         <div className="mt-auto flex flex-wrap gap-2">
