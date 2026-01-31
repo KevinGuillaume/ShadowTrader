@@ -7,6 +7,7 @@ import MarketDates from '../components/MarketPageComponents/MarketDates';
 import MarketFooter from '../components/MarketPageComponents/MarketFooter';
 import MarketRosters from '../components/MarketPageComponents/MarketRosters';
 import BasketballCourt3D from '../components/MarketPageComponents/BasketballCourt3D';
+import TeamAnalytics from '../components/MarketPageComponents/TeamAnalytics';
 import { backendAPI } from '../api';
 
 const MarketPage: React.FC = () => {
@@ -104,32 +105,61 @@ const MarketPage: React.FC = () => {
         onBack={() => navigate("/app")}
       />
       <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
-        
+
         <BasketballCourt3D teamA={teamAName} teamB={teamBName} percentA={percentageTeamA} percentB={percentageTeamB}/>
-        {market.description && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Description</h2>
-            <p className="text-gray-300 leading-relaxed">{market.description}</p>
-          </section>
-        )}
-        <MarketOutcomes
-          outcomes={parseJsonArray(market.outcomes)}
-          outcomePrices={parseJsonArray(market.outcomePrices)}
-        />
-        <MarketDates
-          endDate={market.endDate}
-          startDate={market.startDate}
-        />
-        {league && (
-          <MarketRosters
-            teamA={teamAName}
-            teamB={teamBName}
-            league={league}
+
+        {/* Information Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 text-white border-b border-gray-700 pb-4">
+            Information
+          </h2>
+
+          <div className="flex flex-col md:flex-row gap-8 mb-8">
+            {market.description && (
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold mb-3 text-gray-200">Description</h3>
+                <p className="text-gray-400 leading-relaxed">{market.description}</p>
+              </div>
+            )}
+
+            <div className="flex-1">
+              <MarketOutcomes
+                outcomes={parseJsonArray(market.outcomes)}
+                outcomePrices={parseJsonArray(market.outcomePrices)}
+              />
+            </div>
+          </div>
+
+          <MarketDates
+            endDate={market.endDate}
+            startDate={market.startDate}
           />
-        )}
+        </section>
+
+        {/* Analytics Section */}
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold mb-8 text-white border-b border-gray-700 pb-4">
+            Analytics
+          </h2>
+
+          {league && (
+            <>
+              <TeamAnalytics
+                teamA={teamAName}
+                teamB={teamBName}
+                league={league}
+              />
+
+              <MarketRosters
+                teamA={teamAName}
+                teamB={teamBName}
+                league={league}
+              />
+            </>
+          )}
+        </section>
+
         <MarketFooter market={market} />
-
-
 
       </main>
     </div>

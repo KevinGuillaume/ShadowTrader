@@ -154,7 +154,7 @@ function Court() {
   const lineColorWhite = '#ffffff';
 
   return (
-    <group ref={groupRef} rotation={[0, 1, 0.1]}>
+    <group ref={groupRef} rotation={[-0.1, 1, 0.1]}>
       
       
       {/* Tablet base */}
@@ -394,7 +394,7 @@ export default function BasketballCourt3D({ teamA = 'Team A', teamB = 'Team B' ,
           color="#ffffff"
         />
 
-        <group scale={0.85} position={[0,0,-1]}>
+        <group scale={0.95} position={[0,0,-1]}>
           <Court  />
 
           {/* Team A - name and percentage */}

@@ -2,11 +2,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import uvicorn
 
 from routes.league_router import league_router
 from routes.player_router import player_router
 from routes.market_router import market_router
+from routes.team_router import team_router
 
 
 app = FastAPI(
@@ -36,7 +36,7 @@ app.add_middleware(
 app.include_router(league_router)
 app.include_router(player_router)
 app.include_router(market_router)
-market_router
+app.include_router(team_router)
 
 
 # Root endpoint - health check

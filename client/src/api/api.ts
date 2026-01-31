@@ -1,4 +1,10 @@
-import type { FullTeamPlayersAverages, PlayerVsTeamStats } from "../types/types"
+import type {
+    FullTeamPlayersAverages,
+    TeamLocationSplitsResponse,
+    MatchupLocationContextResponse,
+    TeamRecentFormResponse,
+    MatchupMomentumResponse
+} from "../types/types"
 
 export class API {
     private baseURL: string
@@ -51,5 +57,71 @@ export class API {
         }
     }
 
-    
+    // Team Location Splits (Home/Away Performance)
+    async getTeamLocationSplits(league: string, teamName: string, season?: string): Promise<TeamLocationSplitsResponse> {
+        try {
+            console.log(`Getting location splits for ${teamName}...`)
+            const url = new URL(this.baseURL + `/team/${league}/${teamName}/location-splits`)
+            if (season) url.searchParams.append('season', season)
+
+            const response = await fetch(url.toString())
+            const data: TeamLocationSplitsResponse = await response.json()
+            return data
+        } catch (err) {
+            console.error('Error getting team location splits', err)
+            throw new Error('Unknown error fetching team location splits')
+        }
+    }
+
+    async getMatchupLocationContext(homeTeamId: number, awayTeamId: number, season?: string): Promise<MatchupLocationContextResponse> {
+        try {
+            console.log(`Getting location context for matchup: home=${homeTeamId} vs away=${awayTeamId}`)
+            const url = new URL(this.baseURL + `/team/matchup/location-context`)
+            url.searchParams.append('home_team_id', homeTeamId.toString())
+            url.searchParams.append('away_team_id', awayTeamId.toString())
+            if (season) url.searchParams.append('season', season)
+
+            const response = await fetch(url.toString())
+            const data: MatchupLocationContextResponse = await response.json()
+            return data
+        } catch (err) {
+            console.error('Error getting matchup location context', err)
+            throw new Error('Unknown error fetching matchup location context')
+        }
+    }
+
+    // Team Recent Form (Momentum)
+    async getTeamRecentForm(league: string, teamName: string, season?: string, gamesBack: number = 10): Promise<TeamRecentFormResponse> {
+        try {
+            console.log(`Getting recent form for ${teamName}...`)
+            const url = new URL(this.baseURL + `/team/${league}/${teamName}/recent-form`)
+            if (season) url.searchParams.append('season', season)
+            url.searchParams.append('games_back', gamesBack.toString())
+
+            const response = await fetch(url.toString())
+            const data: TeamRecentFormResponse = await response.json()
+            return data
+        } catch (err) {
+            console.error('Error getting team recent form', err)
+            throw new Error('Unknown error fetching team recent form')
+        }
+    }
+
+    async getMatchupMomentum(team1Id: number, team2Id: number, season?: string, gamesBack: number = 10): Promise<MatchupMomentumResponse> {
+        try {
+            console.log(`Getting momentum for matchup: ${team1Id} vs ${team2Id}`)
+            const url = new URL(this.baseURL + `/team/matchup/momentum`)
+            url.searchParams.append('team1_id', team1Id.toString())
+            url.searchParams.append('team2_id', team2Id.toString())
+            if (season) url.searchParams.append('season', season)
+            url.searchParams.append('games_back', gamesBack.toString())
+
+            const response = await fetch(url.toString())
+            const data: MatchupMomentumResponse = await response.json()
+            return data
+        } catch (err) {
+            console.error('Error getting matchup momentum', err)
+            throw new Error('Unknown error fetching matchup momentum')
+        }
+    }
 }

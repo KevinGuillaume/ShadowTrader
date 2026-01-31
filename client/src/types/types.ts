@@ -154,3 +154,100 @@ export interface FullTeamPlayersAverages {
   league: string;
   all_players: PlayerAverages[];
 }
+
+// Team Location Splits (Home/Away Performance)
+export interface LocationSplitData {
+  id: number;
+  team_id: number;
+  season: string;
+  location: 'home' | 'away';
+  games: number;
+  wins: number;
+  losses: number;
+  win_pct: number;
+  points_per_game: number;
+  points_against_per_game: number;
+  plus_minus: number;
+  field_goal_pct: number;
+  three_pt_pct: number;
+  free_throw_pct: number;
+  rebounds_per_game: number;
+  assists_per_game: number;
+  steals_per_game: number;
+  blocks_per_game: number;
+  turnovers_per_game: number;
+  offensive_rating?: number | null;
+  defensive_rating?: number | null;
+  net_rating?: number | null;
+  last_updated: string;
+}
+
+export interface TeamLocationSplitsResponse {
+  team_id: number;
+  team_name: string;
+  season: string;
+  home: LocationSplitData | null;
+  away: LocationSplitData | null;
+}
+
+export interface MatchupLocationContextResponse {
+  season: string;
+  home_team: {
+    team_id: number;
+    team_name: string;
+    home_record: LocationSplitData | null;
+  };
+  away_team: {
+    team_id: number;
+    team_name: string;
+    away_record: LocationSplitData | null;
+  };
+}
+
+// Team Recent Form (Momentum)
+export interface RecentFormData {
+  id: number;
+  team_id: number;
+  season: string;
+  games_back: number;
+  games: number;
+  wins: number;
+  losses: number;
+  win_pct: number;
+  streak_type: 'W' | 'L' | 'N';
+  streak_count: number;
+  points_per_game: number;
+  field_goal_pct: number;
+  three_pt_pct: number;
+  free_throw_pct: number;
+  rebounds_per_game: number;
+  assists_per_game: number;
+  steals_per_game: number;
+  blocks_per_game: number;
+  turnovers_per_game: number;
+  first_game_date: string;
+  last_game_date: string;
+  last_updated: string;
+}
+
+export interface TeamRecentFormResponse {
+  team_id: number;
+  team_name: string;
+  season: string;
+  recent_form: RecentFormData | null;
+}
+
+export interface MatchupMomentumResponse {
+  season: string;
+  games_back: number;
+  team1: {
+    team_id: number;
+    team_name: string;
+    recent_form: RecentFormData | null;
+  };
+  team2: {
+    team_id: number;
+    team_name: string;
+    recent_form: RecentFormData | null;
+  };
+}

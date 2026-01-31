@@ -140,8 +140,8 @@ const MarketRosters: React.FC<MarketRostersProps> = ({ teamA, teamB, league }) =
     return (
       <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-white">{teamName}</h3>
-          <p className="text-sm text-gray-400">Stats vs {opponent_name}</p>
+          <h3 className="text-xl font-semibold text-blue-400">{teamName}</h3>
+          <p className="text-sm text-gray-400">Player career averages vs {opponent_name}</p>
         </div>
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {all_players.map((player) => (
