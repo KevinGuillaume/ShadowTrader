@@ -8,7 +8,7 @@ export default function SidelineApp() {
   const [leagueTab, setLeagueTab] = useState<string>("NBA");
   const [loading, setLoading] = useState<boolean>(true);
 
-  const leagues = ["NBA", "NFL"]; // Can add more later
+  const leagues = ["NBA"]; // Can add more later
 
   async function init() {
     setLoading(true);
