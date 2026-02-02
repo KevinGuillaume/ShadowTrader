@@ -1,10 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from resources.singletons import player_controller
+from auth import verify_token
 
 
 player_router = APIRouter(
     prefix="/api/v1/player",
-    tags=["League"]
+    tags=["League"],
+    dependencies=[Depends(verify_token)]
 )
 
 @player_router.get(

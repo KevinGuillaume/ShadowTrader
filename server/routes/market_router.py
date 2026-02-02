@@ -1,10 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from resources.singletons import league_controller
 from resources.singletons import supabase
+from auth import verify_token
 
 market_router = APIRouter(
     prefix="/api/v1/market",
-    tags=["market"]
+    tags=["market"],
+    dependencies=[Depends(verify_token)]
 )
 
 @market_router.get(

@@ -6,6 +6,8 @@ import type {
     MatchupMomentumResponse
 } from "../types/types"
 
+const API_KEY = import.meta.env.VITE_API_KEY
+
 export class API {
     private baseURL: string
 
@@ -13,42 +15,63 @@ export class API {
         this.baseURL = baseURL
     }
 
+    private async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                'X-API-Key': API_KEY,
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+        })
+
+        if (response.status === 401) {
+            throw new Error('API authentication failed - check API key')
+        }
+
+        return response
+    }
+
     async getPolymarketEventsData(league: string) {
         try {
             console.log("Getting backend data for: ", league)
-            const response = await fetch(this.baseURL + `/league/${league}`)
+            const response = await this.fetchWithAuth(this.baseURL + `/league/${league}`)
             const data = await response.json()
             return data
           } catch (err) {
             console.error('Error getting event details', err);
+            throw err
         }
     }
 
     async getESPNRostersForTeam(league: string, team: string) {
         try {
             console.log("Getting espn roster backend data for: ", league + ": " + team)
-            const response = await fetch(this.baseURL + `/league/${league}/${team}`)
+            const response = await this.fetchWithAuth(this.baseURL + `/league/${league}/${team}`)
             const data = await response.json()
             return data
           } catch (err) {
             console.error('Error getting event details', err);
+            throw err
         }
     }
 
     async getPolymarketMarketByID(id: string) {
         try {
             console.log("Getting market backend data for id: ", id)
-            const response = await fetch(this.baseURL + `/market/${id}`)
+            const response = await this.fetchWithAuth(this.baseURL + `/market/${id}`)
             const data = await response.json()
             return data
           } catch (err) {
             console.error('Error getting event details', err);
+            throw err
         }
     }
+
     async getTeamsPlayerStats(team: string, league: string, opponent: string): Promise<FullTeamPlayersAverages> {
         try {
             console.log("Getting teams player stats...")
-            const response = await fetch(this.baseURL + `/player/${league}/${team}/stats-vs/${opponent}`)
+            const response = await this.fetchWithAuth(this.baseURL + `/player/${league}/${team}/stats-vs/${opponent}`)
             const data: FullTeamPlayersAverages = await response.json()
             return data
           } catch (err) {
@@ -57,14 +80,13 @@ export class API {
         }
     }
 
-    // Team Location Splits (Home/Away Performance)
     async getTeamLocationSplits(league: string, teamName: string, season?: string): Promise<TeamLocationSplitsResponse> {
         try {
             console.log(`Getting location splits for ${teamName}...`)
             const url = new URL(this.baseURL + `/team/${league}/${teamName}/location-splits`)
             if (season) url.searchParams.append('season', season)
 
-            const response = await fetch(url.toString())
+            const response = await this.fetchWithAuth(url.toString())
             const data: TeamLocationSplitsResponse = await response.json()
             return data
         } catch (err) {
@@ -81,7 +103,7 @@ export class API {
             url.searchParams.append('away_team_id', awayTeamId.toString())
             if (season) url.searchParams.append('season', season)
 
-            const response = await fetch(url.toString())
+            const response = await this.fetchWithAuth(url.toString())
             const data: MatchupLocationContextResponse = await response.json()
             return data
         } catch (err) {
@@ -90,7 +112,6 @@ export class API {
         }
     }
 
-    // Team Recent Form (Momentum)
     async getTeamRecentForm(league: string, teamName: string, season?: string, gamesBack: number = 10): Promise<TeamRecentFormResponse> {
         try {
             console.log(`Getting recent form for ${teamName}...`)
@@ -98,7 +119,7 @@ export class API {
             if (season) url.searchParams.append('season', season)
             url.searchParams.append('games_back', gamesBack.toString())
 
-            const response = await fetch(url.toString())
+            const response = await this.fetchWithAuth(url.toString())
             const data: TeamRecentFormResponse = await response.json()
             return data
         } catch (err) {
@@ -116,7 +137,7 @@ export class API {
             if (season) url.searchParams.append('season', season)
             url.searchParams.append('games_back', gamesBack.toString())
 
-            const response = await fetch(url.toString())
+            const response = await this.fetchWithAuth(url.toString())
             const data: MatchupMomentumResponse = await response.json()
             return data
         } catch (err) {

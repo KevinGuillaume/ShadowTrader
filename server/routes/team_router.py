@@ -1,10 +1,12 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import Optional
 from resources.singletons import team_controller
+from auth import verify_token
 
 team_router = APIRouter(
     prefix="/api/v1/team",
-    tags=["Team"]
+    tags=["Team"],
+    dependencies=[Depends(verify_token)]
 )
 
 
