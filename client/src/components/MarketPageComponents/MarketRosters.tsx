@@ -48,7 +48,7 @@ const MarketRosters: React.FC<MarketRostersProps> = ({ teamA, teamB, league }) =
     if (teamA && teamB && league) {
       fetchTeamStats();
     }
-  }, [teamA, teamB, league]);
+  }, []);
 
   const isNBA = league.toLowerCase() === 'nba';
 

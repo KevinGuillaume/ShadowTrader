@@ -9,6 +9,7 @@ import MarketRosters from '../components/MarketPageComponents/MarketRosters';
 import BasketballCourt3D from '../components/MarketPageComponents/BasketballCourt3D';
 import TeamAnalytics from '../components/MarketPageComponents/TeamAnalytics';
 import { backendAPI } from '../api';
+import { BarChartIcon } from '../components/Icons/BarChartIcon';
 
 const MarketPage: React.FC = () => {
   const navigate = useNavigate();
@@ -138,8 +139,9 @@ const MarketPage: React.FC = () => {
 
         {/* Analytics Section */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-white border-b border-gray-700 pb-4">
+          <h2 className="text-3xl font-bold mb-8 text-white border-b border-gray-700 pb-4 flex items-center gap-2">
             Analytics
+            <BarChartIcon  size={40} className="text-blue-400" />
           </h2>
 
           {league && (

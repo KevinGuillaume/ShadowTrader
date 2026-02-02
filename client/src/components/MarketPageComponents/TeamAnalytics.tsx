@@ -6,6 +6,10 @@ import type {
   LocationSplitData,
   RecentFormData
 } from '../../types/types';
+import { LocationPinIcon } from '../Icons/LocationPinIcon';
+import { TrophyIcon } from 'lucide-react';
+import { HomeIcon } from '../Icons/HomeIcon';
+import { AirplaneIcon } from '../Icons/AirplaneIcon';
 
 interface TeamAnalyticsProps {
   teamA: string;
@@ -77,7 +81,7 @@ const TeamAnalytics: React.FC<TeamAnalyticsProps> = ({ teamA, teamB, league }) =
     if (teamA && teamB && league) {
       fetchAnalytics();
     }
-  }, [teamA, teamB, league]);
+  }, []);
 
   const formatRecord = (wins: number, losses: number) => `${wins}-${losses}`;
   const formatPct = (pct: number) => `${(pct * 100).toFixed(1)}%`;
@@ -100,13 +104,15 @@ const TeamAnalytics: React.FC<TeamAnalyticsProps> = ({ teamA, teamB, league }) =
       return <span className="text-gray-500 italic">No data</span>;
     }
 
-    const icon = location === 'home' ? '🏠' : '✈️';
+    const icon = location === 'home' ? <HomeIcon size={16} className="text-blue-400" /> : <AirplaneIcon size={16} className="text-blue-400" />;
     const label = location === 'home' ? 'Home' : 'Away';
 
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-gray-400 text-sm">{icon} {label}</span>
+          <div className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+          {icon} {label}
+          </div>
           <span className="text-white font-semibold">
             {formatRecord(split.wins, split.losses)} ({formatPct(split.win_pct)})
           </span>
@@ -240,7 +246,8 @@ const TeamAnalytics: React.FC<TeamAnalyticsProps> = ({ teamA, teamB, league }) =
           {/* Location Splits Section */}
           <div>
             <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-              <span>📍</span> Home/Away Performance
+              <LocationPinIcon size={16} className="text-blue-400" />
+               Home/Away Performance
             </h4>
             {locationData.loading ? (
               <div className="flex justify-center py-4">
@@ -260,7 +267,7 @@ const TeamAnalytics: React.FC<TeamAnalyticsProps> = ({ teamA, teamB, league }) =
           {/* Recent Form Section */}
           <div>
             <h4 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-              <span>🔥</span> Recent Form
+              <TrophyIcon size={16} className="text-blue-400" /> Recent Form
             </h4>
             {formData.loading ? (
               <div className="flex justify-center py-4">
