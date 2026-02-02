@@ -7,3 +7,4 @@ typing_extensions==4.15.0
 requests==2.32.5
 aiohttp==3.13.1
 supabase
+slowapi>=0.1.9
